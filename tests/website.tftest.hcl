@@ -29,3 +29,22 @@ run "create_bucket" {
     error_message = "Invalid eTag for error.html"
   }
 }
+
+# This test uses the final helper module and references the website_endpoint output from the main module
+# for the endpoint variable. 
+run "website_is_running" {
+  command = plan
+
+  module {
+    source = "./tests/final"
+  }
+
+  variables {
+    endpoint = run.create_bucket.website_endpoint
+  }
+
+  assert {
+    condition     = data.http.index.status_code == 200
+    error_message = "Website responded with HTTP status ${data.http.index.status_code}"
+  }
+}
